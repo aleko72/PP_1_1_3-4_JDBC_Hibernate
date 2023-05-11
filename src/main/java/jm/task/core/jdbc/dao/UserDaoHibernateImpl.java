@@ -3,6 +3,7 @@ package jm.task.core.jdbc.dao;
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import java.util.List;
 
@@ -37,10 +38,11 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
+        User user = new User(name, lastName, age);
         try(Session session = Util.getSessionFactory().openSession()) {
-            session.beginTransaction();
-            session.save(new User(name, lastName, age));
-            session.getTransaction().commit();
+            Transaction tr = session.beginTransaction();
+            session.save(user);
+            tr.commit();
         }catch (Exception e){
             e.printStackTrace();
             throw e;
@@ -50,10 +52,10 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void removeUserById(long id) {
         try(Session session = Util.getSessionFactory().openSession()) {
-            session.beginTransaction();
-            User user = session.load(User.class, id);
+            Transaction tr = session.beginTransaction();
+            User user = session.get(User.class, id);
             session.delete(user);
-            session.getTransaction().commit();
+            tr.commit();
         }catch (Exception e){
             e.printStackTrace();
             throw e;
@@ -63,7 +65,7 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public List<User> getAllUsers() {
         try (Session session = Util.getSessionFactory().openSession()) {
-           return (List<User>) session.createQuery("from User").list();
+           return (List<User>) session.createQuery("From User").list();
         }catch (Exception e){
             e.printStackTrace();
             throw e;
@@ -73,9 +75,9 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void cleanUsersTable() {
         try (Session session = Util.getSessionFactory().openSession()) {
-            session.beginTransaction();
-            session.createQuery("delete from User").executeUpdate();
-            session.getTransaction().commit();
+            Transaction tr = session.beginTransaction();
+            session.createQuery("Delete From User").executeUpdate();
+            tr.commit();
         }catch (Exception e){
             e.printStackTrace();
             throw e;

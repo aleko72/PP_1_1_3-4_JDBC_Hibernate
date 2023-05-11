@@ -47,14 +47,14 @@ public class Util {
                 settings.put(Environment.USER, USERNAME);
                 settings.put(Environment.PASS, PASSWORD);
                 settings.put(Environment.DIALECT, "org.hibernate.dialect.MySQL5InnoDBDialect");
-
                 settings.put(Environment.SHOW_SQL, "true");
                 configuration.setProperties(settings);
                 configuration.addAnnotatedClass(User.class);
-                ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
-                        .applySettings(configuration.getProperties()).build();
 
-                sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+                StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder()
+                        .applySettings(configuration.getProperties());
+
+                sessionFactory = configuration.buildSessionFactory(builder.build());
             } catch (Exception e) {
                 e.printStackTrace();
             }
