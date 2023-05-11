@@ -3,10 +3,7 @@ package jm.task.core.jdbc.dao;
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,20 +13,109 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void createUsersTable() {
-        statementExecute(Util.QUERY_CREATE_TABLE);
+        Connection connection = null;
+        Statement statement;
+
+        try {
+            connection = Util.getConnection();
+            connection.setAutoCommit(false);
+            statement = connection.createStatement();
+
+            statement.execute(Util.QUERY_CREATE_TABLE);
+            connection.commit();
+            connection.close();
+
+        } catch(SQLException e){
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+            throw new RuntimeException(e);
+        }
     }
 
     public void dropUsersTable() {
-        statementExecute(Util.QUERY_DROP_TABLE);
+        Connection connection = null;
+        Statement statement;
+
+        try {
+            connection = Util.getConnection();
+            connection.setAutoCommit(false);
+            statement = connection.createStatement();
+
+            statement.execute(Util.QUERY_DROP_TABLE);
+            connection.commit();
+            connection.close();
+
+        } catch(SQLException e){
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+            throw new RuntimeException(e);
+        }
     }
 
     public void saveUser(String name, String lastName, byte age) {
-        statementExecute(String.format("INSERT INTO users (name, lastName, age) values ('%s', '%s', %d)",
-                name, lastName, age));
+        String query = "INSERT INTO users (name, lastName, age) VALUES (?, ?, ?)";
+        Connection connection = null;
+        PreparedStatement statement;
+
+        try {
+            connection = Util.getConnection();
+            connection.setAutoCommit(false);
+            statement = connection.prepareStatement(query);
+
+            statement.setString(1, name);
+            statement.setString(2, lastName);
+            statement.setInt(3, age);
+            statement.executeUpdate();
+            connection.commit();
+            connection.close();
+
+        } catch(SQLException e){
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+            throw new RuntimeException(e);
+        }
     }
 
     public void removeUserById(long id) {
-        statementExecute(String.format("DELETE FROM users WHERE id = %d", id));
+        String query = "DELETE FROM users WHERE id = ?";
+        Connection connection = null;
+        PreparedStatement statement;
+
+        try {
+            connection = Util.getConnection();
+            connection.setAutoCommit(false);
+            statement = connection.prepareStatement(query);
+
+            statement.setLong(1, id);
+            statement.executeUpdate();
+            connection.commit();
+            connection.close();
+
+        } catch(SQLException e){
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+            throw new RuntimeException(e);
+        }
     }
 
     public List<User> getAllUsers() {
@@ -52,13 +138,27 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void cleanUsersTable() {
-        statementExecute("DELETE FROM users");
-    }
+        String query = "DELETE FROM users";
+        Connection connection = null;
+        Statement statement;
 
-    private void statementExecute(String query) {
-        try (Connection connection = Util.getConnection(); Statement statement = connection.createStatement()) {
-            statement.execute(query);
-        } catch (SQLException e) {
+        try {
+            connection = Util.getConnection();
+            connection.setAutoCommit(false);
+            statement = connection.createStatement();
+
+            statement.executeUpdate(query);
+            connection.commit();
+            connection.close();
+
+        } catch(SQLException e){
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
             throw new RuntimeException(e);
         }
     }
